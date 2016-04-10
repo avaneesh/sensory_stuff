@@ -1,2 +1,2 @@
-# sensory_stuff
+# Sensory Stuff
 Udoo/Arduino experiments 
