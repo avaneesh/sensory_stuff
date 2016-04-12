@@ -20,15 +20,39 @@
 
 import serial
 import time
+import json
+import sys
+
+l_stock = ["TSLA", "AAPL", "CSCO"]
+
+d={}
+# Get real..
+for stock_sym in l_stock:
+   
+    try:
+        f = open("../stock_ticker/"+stock_sym+".json")
+        result = json.loads(f.read())
+        s_price = result['LastTradePriceOnly']
+        s_symbol = result['Symbol']
+        print '%s is %s' % (s_symbol, s_price)
+        d[s_symbol]=s_price
+        f.close()
+    except IOError as err:
+        print err.strerror + " for " + stock_sym
+        
+if not d:
+    # Init fake data..
+    d['CSCO'] = '32.00'
+    d['TSLA'] = '289.12'
+
+sys.exit()
+
 
 ser = serial.Serial('/dev/ttymxc3',115200,timeout=1)
 ser.flushOutput()
 
 print 'Serial connected'
 
-d={}
-d['CSCO'] = '32.00'
-d['TSLA'] = '289.12'
 
 while True:
 
