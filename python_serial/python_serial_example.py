@@ -1,21 +1,7 @@
 '''
-*  Copyright (C) 2014 Ekironji <ekironjisolutions@gmail.com>
-*
-*  This file is part of serial libraries examples for UDOO
-*
-*  Serial libraries examples for UDOO is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  This libraries are distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*
+Step 1: Gather data
+
+Step 2: Send data over serial port to Arduino
 '''
 
 import serial
@@ -23,14 +9,25 @@ import time
 import json
 import sys
 
+
 l_stock = ["TSLA", "AAPL", "CSCO"]
 
+
+# ********* Step 1.1: Get data from REST API 
+##### Download info about the list of stocks
+import stock_ticker_host
+#stock_ticker_host.start_service(l_stock)
+stock_ticker_host.fetch_these(l_stock)
+
+
+# ********* Step 1.2: Read the information we want
 d={}
 # Get real..
+print "*"*10 + "We got" + 10*"*"
 for stock_sym in l_stock:
-   
     try:
-        f = open("../stock_ticker/"+stock_sym+".json")
+#f = open("../stock_ticker/"+stock_sym+".json")
+        f = open(stock_sym+".json")
         result = json.loads(f.read())
         s_price = result['LastTradePriceOnly']
         s_symbol = result['Symbol']
@@ -42,11 +39,16 @@ for stock_sym in l_stock:
         
 if not d:
     # Init fake data..
+    print "Faking data..."
     d['CSCO'] = '32.00'
     d['TSLA'] = '289.12'
 
-sys.exit()
 
+#print "Exiting.."
+#sys.exit()
+
+
+# ********* Step 2: Send data over serial
 
 ser = serial.Serial('/dev/ttymxc3',115200,timeout=1)
 ser.flushOutput()

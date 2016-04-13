@@ -16,42 +16,77 @@ import urllib
 import urllib2
 import json
 from pprint import pprint
+import time, threading
 
-l_stock = ["TSLA", "AAPL"]
+#l_stock = ["TSLA", "AAPL"]
+l_stock = []
 
-query_template = 'select * from yahoo.finance.quotes where symbol in (%s)'
+def fetch_these(l_stock_param):
+    global l_stock
+    l_stock = l_stock_param
+    print "Starting Stock ticker for these stocks: " + get_stock_list_str()
+    fetch_all()
 
-query_string = query_template % ",".join(['"'+q+'"' for q in l_stock])
-print query_string
-query_string = urllib.quote_plus(query_string)
-print query_string
 
-http_template = 'https://query.yahooapis.com/v1/public/yql?q=%s&format=json'
-http_env = '&env=http%3A%2F%2Fdatatables.org%2Falltables.env'
-http_req_string = http_template % query_string
-http_req_string = http_req_string + http_env
-print http_req_string
+def fetch_all():
+    query_template = 'select * from yahoo.finance.quotes where symbol in (%s)'
+    
+    query_string = query_template % get_stock_list_str()
+    print "Getting " + get_stock_list_str()
+##print query_string
+    query_string = urllib.quote_plus(query_string)
+##print query_string
+    
+    http_template = 'https://query.yahooapis.com/v1/public/yql?q=%s&format=json'
+    http_env = '&env=http%3A%2F%2Fdatatables.org%2Falltables.env'
+    http_req_string = http_template % query_string
+    http_req_string = http_req_string + http_env
+    print http_req_string
+    
+    u = urllib2.urlopen(http_req_string)
+    data = u.read()
+    print "Content is:"
+    
+    stock_results_file = "all_stocks.json"
+    
+    with open(stock_results_file, "w") as f:
+        f.write(data)
+    
+    data = json.loads(data)
+    #pprint(data)
+    
+    # data['query']['results']['quote'][0]['LastTradePriceOnly']
+    
+    results = data['query']['results']['quote']
+    
+    for result in results:
+        s_price = result['LastTradePriceOnly']
+        s_symbol = result['Symbol']
+        print '%s is %s' % (s_symbol, s_price)
+        # Write entire result in individual files
+        with open(s_symbol+".json", "w") as f:
+            f.write(json.dumps(result))
 
-u = urllib2.urlopen(http_req_string)
-data = u.read()
-print "Content is:"
+def get_stock_list_str():
+    return ",".join(['"'+q+'"' for q in l_stock])
 
-stock_results_file = "all_stocks.json"
+def stock_ticker_loop():
+    fetch_all()
+    threading.Timer(10, stock_ticker_loop).start()
 
-with open(stock_results_file, "w") as f:
-    f.write(data)
+def start_service(l_stock_param):
+    global l_stock
+    l_stock = l_stock_param
+    print "Starting Stock ticker for: " + get_stock_list_str()
+    stock_ticker_loop()
 
-data = json.loads(data)
-#pprint(data)
+if __name__ == "__main__":
+    import requests
+    import urllib
+    import urllib2
+    import json
+    from pprint import pprint
+    import time, threading
 
-# data['query']['results']['quote'][0]['LastTradePriceOnly']
 
-results = data['query']['results']['quote']
-
-for result in results:
-    s_price = result['LastTradePriceOnly']
-    s_symbol = result['Symbol']
-    print '%s is %s' % (s_symbol, s_price)
-    # Write entire result in individual files
-    with open(s_symbol+".json", "w") as f:
-        f.write(json.dumps(result))
+    fetch_all()
