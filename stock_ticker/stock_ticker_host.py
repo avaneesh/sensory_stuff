@@ -20,6 +20,7 @@ import time, threading
 
 #l_stock = ["TSLA", "AAPL"]
 l_stock = []
+interval = 60
 
 def fetch_these(l_stock_param):
     global l_stock
@@ -71,11 +72,15 @@ def get_stock_list_str():
     return ",".join(['"'+q+'"' for q in l_stock])
 
 def stock_ticker_loop():
-    fetch_all()
-    threading.Timer(10, stock_ticker_loop).start()
+    t = datetime.datetime.now().time()
 
-def start_service(l_stock_param):
+    fetch_all()
+    threading.Timer(interval, stock_ticker_loop).start()
+
+def start_service(l_stock_param, l_interval):
     global l_stock
+    global interval
+    interval = l_interval
     l_stock = l_stock_param
     print "Starting Stock ticker for: " + get_stock_list_str()
     stock_ticker_loop()
@@ -87,6 +92,9 @@ if __name__ == "__main__":
     import json
     from pprint import pprint
     import time, threading
+    import datetime
 
 
-    fetch_all()
+    l_stock = ["TSLA", "AAPL"]
+#fetch_these(l_stock)
+    start_service(l_stock, 60)
