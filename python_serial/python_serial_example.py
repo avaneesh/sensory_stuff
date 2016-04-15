@@ -10,7 +10,7 @@ import json
 import sys
 
 
-l_stock = ["TSLA", "AAPL", "CSCO"]
+l_stock = ["TSLA", "AAPL", "CSCO", "MSFT"]
 
 
 # ********* Step 1.1: Get data from REST API 
@@ -35,7 +35,7 @@ def read_stocks():
             s_price = result['LastTradePriceOnly']
             s_symbol = result['Symbol']
             print '%s is %s' % (s_symbol, s_price)
-            d[s_symbol]=s_price
+            d[str(s_symbol)]=str(s_price)
             f.close()
         except IOError as err:
             print err.strerror + " for " + stock_sym
@@ -63,27 +63,13 @@ while True:
 
     read_stocks()
 
-    stockName='CSCO'
-    outStr=stockName+' '+d[stockName]
-    print 'Sending - ' + outStr
-    
-    ser.write(outStr)		# write to Arduino to turn ON the LED
-    r = ser.read(6)
-    print r
-    
-    time.sleep(3) 		# delay for 1 second
-    
-    ser.write("1")		# write to Arduino to turn OFF the LED
-    r = ser.read(6)
-    print r
-    
-    time.sleep(1) 		# delay for 1 second
-    stockName='TSLA'
-    outStr=stockName+' '+d[stockName]
-    print 'Sending - ' + outStr
-    
-    ser.write(outStr)		# write to Arduino to turn ON the LED
-    r = ser.read(6)
-    print r
-    
-    time.sleep(3) 		# delay for 1 second
+    for stockName, stockPrice in d.iteritems():
+       formattedPrice = "{0:.2f}".format(float(stockPrice))
+       formattedPrice = (formattedPrice+"   ")[:6] # Append extra space if required
+       outStr = ("%s %s" % (stockName, formattedPrice))
+       print 'Sending - ' + outStr
+       ser.write(outStr)		# write to Arduino to turn ON the LED
+       time.sleep(2) 		# delay for 2 second
+       r = ser.read(6) # Read what Arduino says
+       print r
+        

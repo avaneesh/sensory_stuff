@@ -95,6 +95,6 @@ if __name__ == "__main__":
     import datetime
 
 
-    l_stock = ["TSLA", "AAPL"]
+    l_stock = ["TSLA", "AAPL", "CSCO", "MSFT"]
 #fetch_these(l_stock)
-    start_service(l_stock, 60)
+    start_service(l_stock, 20)
